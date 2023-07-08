@@ -19,17 +19,18 @@ pub fn get_notes() -> Vec<Note> {
     }
 }
 
-pub fn get_note_by_title_regex(title: &String) -> Option<Note> {
+pub fn get_notes_by_title_regex(title: &String) -> Vec<Note> {
     let re = Regex::new(title).expect("Invalid title regex");
+    let mut matching_notes: Vec<Note> = Vec::new();
 
     let notes: Vec<Note> = get_notes();
     for note in notes {
         if re.is_match(&note.get_title()) {
-            return Option::Some(note);
+            matching_notes.push(note);
         }
     }
 
-    return Option::None;
+    return matching_notes;
 }
 
 pub fn get_note_by_title(title: &String) -> Option<Note> {
@@ -60,15 +61,18 @@ pub fn delete_note_by_title(title: &String) {
     }
 }
 
-pub fn delete_note_by_regex_title(title: &String) {
+pub fn delete_note_by_regex_title(title: &String) -> u8 {
     let re = Regex::new(title).expect("Invalid title regex");
+    let mut notes_deleted: u8 = 0;
 
     let mut notes: Vec<Note> = get_notes();
     for(note_index, note) in notes.iter().enumerate() {
         if re.is_match(&note.get_title()) {
             notes.remove(note_index);
-            write_notes(notes);
-            return;
+            notes_deleted += 1;
         }
     }
+
+    write_notes(notes);
+    return notes_deleted;
 }
