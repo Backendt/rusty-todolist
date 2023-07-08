@@ -1,9 +1,9 @@
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use time::OffsetDateTime;
 use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Note {
-    creation_date: u64,
+    creation_date: OffsetDateTime,
     title: String,
     content: String,
 }
@@ -11,14 +11,13 @@ pub struct Note {
 impl Note {
 
     pub fn new(title: String, content: String) -> Note {
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-        let unix_time: u64 = now.as_secs();
-        return Note{creation_date: unix_time, title, content}
+        let now: OffsetDateTime = OffsetDateTime::now_local()
+            .unwrap_or(OffsetDateTime::now_utc());
+        return Note{creation_date: now, title, content}
     }
     
-    pub fn get_creation_date(&self) -> SystemTime {
-        let creation_unix_time = Duration::from_secs(self.creation_date);
-        return UNIX_EPOCH + creation_unix_time;
+    pub fn get_creation_date(&self) -> &OffsetDateTime {
+        return &self.creation_date;
     }
 
     pub fn get_title(&self) -> &String {
