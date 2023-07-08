@@ -41,7 +41,7 @@ fn main() {
     match &command_args.command {
         Commands::List => list_notes(),
         Commands::Add{title, content} => add_note(title, content),
-        Commands::Delete{title} => delete_note( title, command_args.regex),
+        Commands::Delete{title} => delete_note(title, command_args.regex),
         Commands::Read{title} => read_note(title, command_args.regex),
     };
 }

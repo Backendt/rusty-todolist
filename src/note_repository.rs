@@ -2,16 +2,22 @@ use crate::note_model::Note;
 use std::fs::{read, write};
 use bincode::{deserialize, serialize};
 use regex::Regex;
+use std::env;
 
-const NOTES_FILEPATH: &str = "~/.todos";
+fn get_notes_filepath() -> String {
+    let home_env: String = env::var("HOME").expect("HOME environment variable is not set");
+    return home_env + "/.todos";
+}
 
 fn write_notes(notes: Vec<Note>) {
     let serialized_note: Vec<u8> = serialize(&notes).unwrap();
-    write(NOTES_FILEPATH, serialized_note).expect("Could not write note to todos file");
+    let notes_filepath = get_notes_filepath();
+    write(notes_filepath, serialized_note).expect("Could not write note to todos file");
 }
 
 pub fn get_notes() -> Vec<Note> {
-    let note_file = read(NOTES_FILEPATH);
+    let notes_filepath = get_notes_filepath();
+    let note_file = read(notes_filepath);
 
     return match &note_file {
         Ok(notes_bytes) => deserialize(&notes_bytes[..]).unwrap(),
@@ -43,36 +49,41 @@ pub fn get_note_by_title(title: &String) -> Option<Note> {
     return Option::None;
 }
 
-pub fn add_note(title: String, content: String) {
-    let note: Note = Note::new(title, content);
+pub fn add_note(note: Note) {
     let mut note_list: Vec<Note> = get_notes();
     note_list.push(note);
     write_notes(note_list);
 }
 
-pub fn delete_note_by_title(title: &String) {
+pub fn delete_note_by_title(title: &String) -> bool {
     let mut notes: Vec<Note> = get_notes();
-    for (note_index, note) in notes.iter().enumerate() {
+    for(note_index, note) in notes.iter().enumerate() {
         if note.get_title() == title {
             notes.remove(note_index);
             write_notes(notes);
-            return;
+            return true;
         }
     }
+
+    return false;
 }
 
-pub fn delete_note_by_regex_title(title: &String) -> u8 {
+pub fn delete_note_by_regex_title(title: &String) -> u16 {
     let re = Regex::new(title).expect("Invalid title regex");
-    let mut notes_deleted: u8 = 0;
 
-    let mut notes: Vec<Note> = get_notes();
-    for(note_index, note) in notes.iter().enumerate() {
-        if re.is_match(&note.get_title()) {
-            notes.remove(note_index);
-            notes_deleted += 1;
-        }
-    }
+    let mut deleted_notes_amount: u16 = 0;
 
-    write_notes(notes);
-    return notes_deleted;
+    let notes: Vec<Note> = get_notes();
+    let new_notes = notes.into_iter()
+        .filter(|note| {
+            let matches: bool = re.is_match(&note.get_title());
+            if matches {
+                deleted_notes_amount += 1;
+            }
+            return !matches;
+        })
+        .collect();
+
+    write_notes(new_notes);
+    return deleted_notes_amount;
 }
