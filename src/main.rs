@@ -20,6 +20,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// List notes
+    #[clap(visible_alias = "ls")]
     List,
     /// Add note
     Add {
@@ -27,10 +28,12 @@ enum Commands {
         content: String,
     },
     /// Delete note(s)
+    #[clap(visible_alias = "rm")]
     Delete {
         title: String,
     },
     /// Read note(s)
+    #[clap(visible_alias = "see")]
     Read {
         title: String,
     },
